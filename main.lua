@@ -61,7 +61,7 @@ function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
     -- set the title of our application window
-    love.window.setTitle('Pong')
+    love.window.setTitle('Pong (with AI!)')
 
     -- "seed" the RNG so that calls to random are always random
     -- use the current time, since that will vary on startup every time
@@ -103,6 +103,7 @@ function love.load()
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
     gameState = 'start'
+    ai_offset = 0
 end
 
 --[[
@@ -118,7 +119,7 @@ end
     since the last frame, which LÖVE2D supplies us.
 ]]
 function love.update(dt)
-    if gameState == 'serve' then
+      if gameState == 'serve' then
         -- before switching to play, initialize ball's velocity based
         -- on player who last scored
         ball.dy = math.random(-50, 50)
@@ -133,7 +134,8 @@ function love.update(dt)
         if ball:collides(player1) then
             ball.dx = -ball.dx * 1.03
             ball.x = player1.x + 5
-
+           
+            ai_offset = ai_offset + math.random(-5, 5)
             -- keep velocity going in the same direction, but randomize it
             if ball.dy < 0 then
                 ball.dy = -math.random(10, 150)
@@ -147,6 +149,7 @@ function love.update(dt)
             ball.dx = -ball.dx * 1.03
             ball.x = player2.x - 4
 
+            ai_offset = ai_offset + math.random(-5, 5)
             -- keep velocity going in the same direction, but randomize it
             if ball.dy < 0 then
                 ball.dy = -math.random(10, 150)
@@ -215,22 +218,21 @@ function love.update(dt)
     end
 
     -- player 2 movement
-    if love.keyboard.isDown('up') then
-        player2.dy = -PADDLE_SPEED
-    elseif love.keyboard.isDown('down') then
-        player2.dy = PADDLE_SPEED
-    else
-        player2.dy = 0
-    end
+
+    
+    player2.y = ball.y+ai_offset
+
+
 
     -- update our ball based on its DX and DY only if we're in play state;
     -- scale the velocity by dt so movement is framerate-independent
     if gameState == 'play' then
         ball:update(dt)
+        player2:update(dt)    
     end
 
     player1:update(dt)
-    player2:update(dt)
+
 end
 
 --[[
@@ -279,7 +281,7 @@ function love.draw()
 
     -- clear the screen with a specific color; in this case, a color similar
     -- to some versions of the original Pong
-    love.graphics.clear(40/255, 45/255, 52/255, 255/255)
+    love.graphics.clear(41/255, 45/255, 52/255, 255/255)
 
     love.graphics.setFont(smallFont)
 
@@ -321,7 +323,7 @@ function displayFPS()
     -- simple FPS display across all states
     love.graphics.setFont(smallFont)
     love.graphics.setColor(0, 255/255, 0, 255/255)
-    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 10, 10)
+    love.graphics.print('ERROR: ' .. tostring(ai_offset), 10, 10)
 end
 
 --[[
